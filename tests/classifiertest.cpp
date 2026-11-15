@@ -75,6 +75,9 @@ private Q_SLOTS:
         QTest::newRow("md, hidden file ignored") << "guide2" << QStringList{"a.md", "b.md", ".directory", "img/1.png", "img/2.png", "img/3.png"}
                                                  << "markdown";
         QTest::newRow("one md is not enough") << "readme" << QStringList{"README.md", "src/a.py", "src/b.py", "src/c.py"} << "python";
+        QTest::newRow("mostly md plus a pdf") << "book" << QStringList{"a.md", "b.md", "c.md", "book.pdf", "img/1.png", "img/2.png", "img/3.png",
+                                                                       "img/4.png", "img/5.png", "img/6.png"}
+                                              << "markdown";
         QTest::newRow("md plus other file") << "mixedroot" << QStringList{"a.md", "b.md", "x.dat", "img/1.png", "img/2.png", "img/3.png", "img/4.png"}
                                             << "images";
         QTest::newRow("cmake c++ with assets") << "cmakecpp"

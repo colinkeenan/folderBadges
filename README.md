@@ -56,9 +56,10 @@ To uninstall: `sudo xargs rm < build/install_manifest.txt`.
    `init.lua` or a folder called `nvim` / `*.nvim` -> Neovim, ...
    A marker shared by several types only narrows the choice: `CMakeLists.txt` or
    `meson.build` means C or C++, whichever has more files.
-2. If the files directly in the folder (at least two; hidden files and symlinks ignored) all have the
-   **same type**, that type wins and subfolders are not looked at. Markdown notes next to a
-   folder full of images are Markdown.
+2. If **almost all files directly in the folder** have one type (at least 75% and at
+   least two files; hidden files and symlinks are not counted), that type wins and
+   subfolders are not looked at. Markdown notes with the odd PDF, next to a folder full of
+   images, are Markdown.
 3. Otherwise the **dominant file type** of a bounded breadth-first scan (4 levels, 5000
    entries; hidden entries, symlinks and `node_modules`, `target`, `build`, ... are skipped).
    The winner must make up at least 40% of all files seen and must not be tied.
@@ -118,6 +119,7 @@ The format is the same as [data/types.json](data/types.json):
 maxDepth=4
 maxEntries=5000
 minShare=0.4
+sameTypeShare=0.75
 sameTypeMinFiles=2
 maxAgeHours=24
 ignoredDirs=node_modules, target, build, dist, vendor, __pycache__, venv, third_party

@@ -5,6 +5,7 @@
 #include <QHash>
 #include <QSet>
 
+#include <algorithm>
 #include <deque>
 #include <filesystem>
 #include <system_error>
@@ -128,24 +129,25 @@ Classification Classifier::classify(const QString &directory) const
         }
     }
 
-    // ---- 2a. the folder's own files all have one type: no need to look into subfolders ----
-    // Typical case: notes in Markdown next to a folder full of the images they reference.
-    if (contenders.isEmpty()) {
-        int owner = -1;
-        int sameTypeFiles = 0;
+    // ---- 2a. almost all of the folder's own files have one type: skip the subfolders ----
+    // Typical case: notes in Markdown (plus the odd PDF) next to a folder full of the images
+    // they reference.
+    if (contenders.isEmpty() && !root.ownFiles.isEmpty()) {
+        QList<int> ownCounts(types.size(), 0);
         for (const QString &name : std::as_const(root.ownFiles)) {
             const int dot = name.lastIndexOf(QLatin1Char('.'));
-            const auto it = dot > 0 ? extensionOwner.constFind(name.mid(dot + 1).toLower()) : extensionOwner.constEnd();
-            if (it == extensionOwner.constEnd() || (owner >= 0 && *it != owner)) {
-                owner = -1;
-                sameTypeFiles = 0;
-                break;
+            if (dot <= 0) {
+                continue;
             }
-            owner = *it;
-            ++sameTypeFiles;
+            if (const auto it = extensionOwner.constFind(name.mid(dot + 1).toLower()); it != extensionOwner.constEnd()) {
+                ++ownCounts[*it];
+            }
         }
-        if (owner >= 0 && sameTypeFiles >= m_settings.sameTypeMinFiles) {
-            return {types[owner].id, QStringLiteral("all %1 files directly in the folder are %2").arg(sameTypeFiles).arg(types[owner].name)};
+        const int owner = std::max_element(ownCounts.cbegin(), ownCounts.cend()) - ownCounts.cbegin();
+        const int total = root.ownFiles.size();
+        if (ownCounts[owner] >= m_settings.sameTypeMinFiles && ownCounts[owner] >= m_settings.sameTypeShare * total) {
+            return {types[owner].id,
+                    QStringLiteral("%1 of %2 files directly in the folder are %3").arg(ownCounts[owner]).arg(total).arg(types[owner].name)};
         }
     }
 
