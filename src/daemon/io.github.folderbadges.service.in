@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=io.github.folderbadges
+Exec=@KDE_INSTALL_FULL_BINDIR@/folderbadgesd
