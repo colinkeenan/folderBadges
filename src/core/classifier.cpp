@@ -81,24 +81,38 @@ Classification Classifier::classify(const QString &directory) const
         }
     }
 
+    // A marker listed by several types (CMakeLists.txt: C or C++) only narrows the choice
+    // down to those types; the file scan below then picks between them.
+    QList<int> contenders;
+    QString sharedMarker;
+    const QList<BadgeType> &types = m_table.types();
     const QString ownName = QFileInfo(directory).fileName();
-    for (const BadgeType &type : m_table.types()) {
-        for (const QString &glob : type.dirNames) {
+    for (int i = 0; i < types.size() && contenders.isEmpty(); ++i) {
+        for (const QString &glob : types[i].dirNames) {
             if (QDir::match(glob, ownName)) {
-                return {type.id, QStringLiteral("folder name matches '%1'").arg(glob)};
+                return {types[i].id, QStringLiteral("folder name matches '%1'").arg(glob)};
             }
         }
-        for (const QString &marker : type.markers) {
-            if (markerMatches(marker, root)) {
-                return {type.id, QStringLiteral("contains %1").arg(marker)};
+        for (const QString &marker : types[i].markers) {
+            if (!markerMatches(marker, root)) {
+                continue;
             }
+            for (int j = 0; j < types.size(); ++j) {
+                if (types[j].markers.contains(marker)) {
+                    contenders << j;
+                }
+            }
+            if (contenders.size() == 1) {
+                return {types[i].id, QStringLiteral("contains %1").arg(marker)};
+            }
+            sharedMarker = marker;
+            break;
         }
     }
 
     // ---- 2. file types ----
     QHash<QString, int> extensionOwner; // extension -> index into types
     QHash<QString, QList<int>> sharedClaimants;
-    const QList<BadgeType> &types = m_table.types();
     for (int i = 0; i < types.size(); ++i) {
         for (const QString &ext : types[i].extensions) {
             if (!extensionOwner.contains(ext)) {
@@ -112,7 +126,7 @@ Classification Classifier::classify(const QString &directory) const
 
     // ---- 2a. the folder's own files all have one type: no need to look into subfolders ----
     // Typical case: notes in Markdown next to a folder full of the images they reference.
-    {
+    if (contenders.isEmpty()) {
         int owner = -1;
         int sameTypeFiles = 0;
         for (const QString &name : std::as_const(root.files)) {
@@ -195,6 +209,17 @@ Classification Classifier::classify(const QString &directory) const
             }
         }
         counts[best] += it.value();
+    }
+
+    if (!contenders.isEmpty()) {
+        int winner = contenders.first(); // table order breaks ties
+        for (int contender : std::as_const(contenders)) {
+            if (counts[contender] > counts[winner]) {
+                winner = contender;
+            }
+        }
+        return {types[winner].id,
+                QStringLiteral("contains %1, %2 of %3 files are %4").arg(sharedMarker).arg(counts[winner]).arg(totalFiles).arg(types[winner].name)};
     }
 
     int best = -1;

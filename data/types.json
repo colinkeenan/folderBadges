@@ -6,6 +6,8 @@
     "             the names after it are fallbacks from the icon theme",
     "markers    - entries in the folder root that identify the type. 'a+b' = all required,",
     "             trailing '/' = must be a directory, globs (*, ?) allowed",
+    "             a marker listed by several types narrows the choice to those types and",
+    "             the one with the most files wins (CMakeLists.txt: C or C++)",
     "dirNames   - globs matched against the folder's own name",
     "extensions - file extensions counted for the 'dominant type' fallback",
     "shared     - extensions several types claim (e.g. .h); they go to the claimant that is ahead",
@@ -92,13 +94,14 @@
     {
       "id": "cpp", "name": "C++",
       "icons": ["folderbadges-cpp", "text-x-c++src", "text-x-c++"],
+      "markers": ["CMakeLists.txt", "meson.build"],
       "extensions": ["cpp", "cc", "cxx", "hpp", "hh", "hxx"],
       "shared": ["h"]
     },
     {
       "id": "c", "name": "C",
       "icons": ["folderbadges-c", "text-x-csrc", "text-x-c"],
-      "markers": ["Kconfig+Makefile"],
+      "markers": ["Kconfig+Makefile", "CMakeLists.txt", "meson.build"],
       "extensions": ["c"],
       "shared": ["h"]
     },

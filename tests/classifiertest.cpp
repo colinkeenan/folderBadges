@@ -77,6 +77,11 @@ private Q_SLOTS:
         QTest::newRow("one md is not enough") << "readme" << QStringList{"README.md", "src/a.py", "src/b.py", "src/c.py"} << "python";
         QTest::newRow("md plus other file") << "mixedroot" << QStringList{"a.md", "b.md", "x.dat", "img/1.png", "img/2.png", "img/3.png", "img/4.png"}
                                             << "images";
+        QTest::newRow("cmake c++ with assets") << "cmakecpp"
+                                               << QStringList{"CMakeLists.txt", "src/a.cpp", "src/a.h", "art/1.svg", "art/2.svg", "art/3.svg", "art/4.svg"}
+                                               << "cpp";
+        QTest::newRow("cmake c") << "cmakec" << QStringList{"CMakeLists.txt", "src/a.c", "src/b.c", "src/x.cpp", "src/a.h"} << "c";
+        QTest::newRow("cmake, no sources yet") << "cmakenew" << QStringList{"CMakeLists.txt", "README.md"} << "cpp";
         QTest::newRow("empty") << "empty" << QStringList{} << "";
         QTest::newRow("unknown files") << "misc" << QStringList{"a.xyz", "b.qqq", "c"} << "";
         QTest::newRow("below threshold") << "mixed" << QStringList{"a.md", "b.xyz", "c.xyz", "d.xyz"} << "";

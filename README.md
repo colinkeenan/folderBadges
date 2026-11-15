@@ -54,6 +54,8 @@ To uninstall: `sudo xargs rm < build/install_manifest.txt`.
 1. **Markers and names**, first match in type-table order wins: `Cargo.toml` -> Rust,
    `tsconfig.json` -> TypeScript, `package.json` -> JavaScript, `flake.nix` -> Nix,
    `init.lua` or a folder called `nvim` / `*.nvim` -> Neovim, ...
+   A marker shared by several types only narrows the choice: `CMakeLists.txt` or
+   `meson.build` means C or C++, whichever has more files.
 2. If the files directly in the folder (at least two, hidden ones ignored) all have the
    **same type**, that type wins and subfolders are not looked at. Markdown notes next to a
    folder full of images are Markdown.
