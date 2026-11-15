@@ -54,7 +54,10 @@ To uninstall: `sudo xargs rm < build/install_manifest.txt`.
 1. **Markers and names**, first match in type-table order wins: `Cargo.toml` -> Rust,
    `tsconfig.json` -> TypeScript, `package.json` -> JavaScript, `flake.nix` -> Nix,
    `init.lua` or a folder called `nvim` / `*.nvim` -> Neovim, ...
-2. Otherwise the **dominant file type** of a bounded breadth-first scan (4 levels, 5000
+2. If the files directly in the folder (at least two, hidden ones ignored) all have the
+   **same type**, that type wins and subfolders are not looked at. Markdown notes next to a
+   folder full of images are Markdown.
+3. Otherwise the **dominant file type** of a bounded breadth-first scan (4 levels, 5000
    entries; hidden entries, symlinks and `node_modules`, `target`, `build`, ... are skipped).
    The winner must make up at least 40% of all files seen and must not be tied.
    `.h` files count for C or C++, whichever is ahead.
@@ -111,6 +114,7 @@ The format is the same as [data/types.json](data/types.json):
 maxDepth=4
 maxEntries=5000
 minShare=0.4
+sameTypeMinFiles=2
 maxAgeHours=24
 ignoredDirs=node_modules, target, build, dist, vendor, __pycache__, venv, third_party
 excludedPaths=/proc, /sys, /dev

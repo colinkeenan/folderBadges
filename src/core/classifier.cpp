@@ -95,7 +95,7 @@ Classification Classifier::classify(const QString &directory) const
         }
     }
 
-    // ---- 2. dominant file type ----
+    // ---- 2. file types ----
     QHash<QString, int> extensionOwner; // extension -> index into types
     QHash<QString, QList<int>> sharedClaimants;
     const QList<BadgeType> &types = m_table.types();
@@ -110,6 +110,31 @@ Classification Classifier::classify(const QString &directory) const
         }
     }
 
+    // ---- 2a. the folder's own files all have one type: no need to look into subfolders ----
+    // Typical case: notes in Markdown next to a folder full of the images they reference.
+    {
+        int owner = -1;
+        int sameTypeFiles = 0;
+        for (const QString &name : std::as_const(root.files)) {
+            if (name.startsWith(QLatin1Char('.'))) {
+                continue;
+            }
+            const int dot = name.lastIndexOf(QLatin1Char('.'));
+            const auto it = dot > 0 ? extensionOwner.constFind(name.mid(dot + 1).toLower()) : extensionOwner.constEnd();
+            if (it == extensionOwner.constEnd() || (owner >= 0 && *it != owner)) {
+                owner = -1;
+                sameTypeFiles = 0;
+                break;
+            }
+            owner = *it;
+            ++sameTypeFiles;
+        }
+        if (owner >= 0 && sameTypeFiles >= m_settings.sameTypeMinFiles) {
+            return {types[owner].id, QStringLiteral("all %1 files directly in the folder are %2").arg(sameTypeFiles).arg(types[owner].name)};
+        }
+    }
+
+    // ---- 2b. dominant type of a bounded scan ----
     const QSet<QString> ignored(m_settings.ignoredDirs.begin(), m_settings.ignoredDirs.end());
     QList<int> counts(types.size(), 0);
     QHash<QString, int> sharedCounts;

@@ -14,6 +14,7 @@ Settings Settings::load()
     s.maxDepth = conf.value(QStringLiteral("maxDepth"), s.maxDepth).toInt();
     s.maxEntries = conf.value(QStringLiteral("maxEntries"), s.maxEntries).toInt();
     s.minShare = conf.value(QStringLiteral("minShare"), s.minShare).toDouble();
+    s.sameTypeMinFiles = conf.value(QStringLiteral("sameTypeMinFiles"), s.sameTypeMinFiles).toInt();
     s.maxAgeHours = conf.value(QStringLiteral("maxAgeHours"), s.maxAgeHours).toInt();
     s.ignoredDirs = conf.value(QStringLiteral("ignoredDirs"), s.ignoredDirs).toStringList();
     s.excludedPaths = conf.value(QStringLiteral("excludedPaths"), s.excludedPaths).toStringList();
