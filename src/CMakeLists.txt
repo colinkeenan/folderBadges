@@ -34,3 +34,7 @@ kcoreaddons_add_plugin(folderbadgesoverlay
 )
 target_link_libraries(folderbadgesoverlay PRIVATE
     KF6::KIOCore Qt6::DBus Qt6::Gui)
+
+# ---- badge icons, installed as hicolor emblems so any icon theme can override them ----
+file(GLOB badge_icons ${CMAKE_SOURCE_DIR}/data/badges/sc-emblems-folderbadges-*.svg)
+ecm_install_icons(ICONS ${badge_icons} DESTINATION ${KDE_INSTALL_ICONDIR} THEME hicolor)

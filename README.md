@@ -9,9 +9,16 @@ Folder icons in Dolphin get a small badge showing what the folder mostly contain
 ~/projects/server   -> folder + Rust badge
 ```
 
-The badge is an *overlay*: the plugin only hands Dolphin the name of a theme icon
-(`text-rust`, `text-markdown`, ...). The folder icon and the badge are both drawn by the
-current icon theme, so everything follows theme changes and no PNGs are generated.
+The badge is an *overlay*: the plugin only hands Dolphin an icon name and Dolphin paints
+it on top of whatever folder icon the current theme has, so no PNGs are generated and
+folders keep following the icon theme.
+
+The badges themselves are small coloured labels (`RS`, `TS`, `PY`, a Markdown mark, ...)
+shipped with FolderBadges in [data/badges](data/badges), because the file-type icons of
+most themes are a page with a tiny logo that is unreadable at badge size. They are
+installed as `folderbadges-<type>` emblems in the hicolor theme; an icon theme can ship
+icons with the same names to restyle them. Neovim uses the real `nvim` application icon
+when it is installed.
 
 The original idea is in [copilotIdea.md](copilotIdea.md).
 
@@ -36,7 +43,8 @@ ctest --test-dir build
 sudo cmake --install build
 ```
 
-Then restart Dolphin (`killall dolphin`, or close every window). Folders get their badge a
+Then restart Dolphin (`killall dolphin`, or close every window). After an upgrade also run
+`pkill folderbadgesd` so the new daemon is used. Folders get their badge a
 moment after they first show up in a view.
 
 To uninstall: `sudo xargs rm < build/install_manifest.txt`.
@@ -92,7 +100,7 @@ The format is the same as [data/types.json](data/types.json):
 
 ```json
 { "types": [
-  { "id": "zig", "name": "Zig", "icons": ["text-x-zig", "text-x-script"],
+  { "id": "zig", "name": "Zig", "icons": ["text-x-zig"],
     "markers": ["build.zig"], "extensions": ["zig"] }
 ] }
 ```
@@ -124,10 +132,9 @@ Service `io.github.folderbadges`, object `/FolderBadges`, interface
   (`folderbadges clear DIR` forces one).
 - Dolphin places the badge in the first free corner (bottom right on a plain folder); a
   symlinked folder already uses that corner for its link emblem.
-- Some themes have no icon for some types (Breeze and Oxygen have none for Nix, Go, Lua
-  or TypeScript). Those use the next icon in the type's `icons` list that the theme really
-  has (TypeScript -> the JavaScript icon, Nix/Go/Lua -> the script icon); if none exists
-  the folder gets no badge.
+- The badge icons are plain labels drawn for this project, not the official logos.
+  To change one, edit `data/badges/generate.py` and run it, or list a different icon
+  first in the type's `icons` in `~/.config/folderbadges/types.json`.
 
 ## License
 

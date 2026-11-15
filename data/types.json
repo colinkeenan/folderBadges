@@ -1,7 +1,9 @@
 {
   "_comment": [
     "Built-in badge types. Order matters: for marker/dirName rules the first matching type wins.",
-    "icons      - theme icon names, first one present in the current icon theme is used",
+    "icons      - icon names, the first one that exists is used. folderbadges-<id> are the",
+    "             badge icons shipped in data/badges (an icon theme may provide its own);",
+    "             the names after it are fallbacks from the icon theme",
     "markers    - entries in the folder root that identify the type. 'a+b' = all required,",
     "             trailing '/' = must be a directory, globs (*, ?) allowed",
     "dirNames   - globs matched against the folder's own name",
@@ -12,152 +14,152 @@
   "types": [
     {
       "id": "neovim", "name": "Neovim",
-      "icons": ["nvim", "neovim", "text-x-lua", "text-x-script"],
+      "icons": ["nvim", "neovim", "folderbadges-neovim"],
       "markers": ["init.lua", "init.vim", "lua/+plugin/", "lua/+lazy-lock.json"],
       "dirNames": ["nvim", "*.nvim", "nvim-*"]
     },
     {
       "id": "termux", "name": "Termux",
-      "icons": ["termux", "com.termux", "utilities-terminal"],
+      "icons": ["folderbadges-termux", "termux", "com.termux", "utilities-terminal"],
       "markers": ["termux.properties"],
       "dirNames": [".termux", "termux", "termux-*"]
     },
     {
       "id": "rust", "name": "Rust",
-      "icons": ["text-rust", "text-x-rust"],
+      "icons": ["folderbadges-rust", "text-rust", "text-x-rust"],
       "markers": ["Cargo.toml"],
       "extensions": ["rs"]
     },
     {
       "id": "nix", "name": "Nix",
-      "icons": ["text-x-nix", "nix-snowflake", "text-x-script"],
+      "icons": ["folderbadges-nix", "text-x-nix", "nix-snowflake", "text-x-script"],
       "markers": ["flake.nix", "default.nix", "shell.nix"],
       "extensions": ["nix"]
     },
     {
       "id": "typescript", "name": "TypeScript",
-      "icons": ["text-x-typescript", "application-typescript", "text-typescript", "text-javascript", "application-javascript"],
+      "icons": ["folderbadges-typescript", "text-x-typescript", "application-typescript", "text-typescript", "text-javascript", "application-javascript"],
       "markers": ["tsconfig.json", "deno.json", "deno.jsonc"],
       "extensions": ["ts", "tsx", "mts", "cts"]
     },
     {
       "id": "javascript", "name": "JavaScript",
-      "icons": ["text-javascript", "application-javascript", "text-x-javascript"],
+      "icons": ["folderbadges-javascript", "text-javascript", "application-javascript", "text-x-javascript"],
       "markers": ["package.json"],
       "extensions": ["js", "jsx", "mjs", "cjs"]
     },
     {
       "id": "go", "name": "Go",
-      "icons": ["text-x-go", "text-x-script"],
+      "icons": ["folderbadges-go", "text-x-go", "text-x-script"],
       "markers": ["go.mod"],
       "extensions": ["go"]
     },
     {
       "id": "python", "name": "Python",
-      "icons": ["text-x-python", "text-x-python3"],
+      "icons": ["folderbadges-python", "text-x-python", "text-x-python3"],
       "markers": ["pyproject.toml", "setup.py", "requirements.txt", "Pipfile"],
       "extensions": ["py", "pyi", "ipynb"]
     },
     {
       "id": "java", "name": "Java",
-      "icons": ["text-x-java", "text-x-java-source", "application-x-java"],
+      "icons": ["folderbadges-java", "text-x-java", "text-x-java-source", "application-x-java"],
       "markers": ["pom.xml"],
       "extensions": ["java"]
     },
     {
       "id": "kotlin", "name": "Kotlin",
-      "icons": ["text-x-kotlin", "text-x-java"],
+      "icons": ["folderbadges-kotlin", "text-x-kotlin", "text-x-java"],
       "extensions": ["kt", "kts"]
     },
     {
       "id": "haskell", "name": "Haskell",
-      "icons": ["text-x-haskell", "text-x-script"],
+      "icons": ["folderbadges-haskell", "text-x-haskell", "text-x-script"],
       "markers": ["stack.yaml", "*.cabal"],
       "extensions": ["hs", "lhs"]
     },
     {
       "id": "ruby", "name": "Ruby",
-      "icons": ["application-x-ruby", "text-x-ruby"],
+      "icons": ["folderbadges-ruby", "application-x-ruby", "text-x-ruby"],
       "markers": ["Gemfile"],
       "extensions": ["rb"]
     },
     {
       "id": "php", "name": "PHP",
-      "icons": ["application-x-php", "text-x-php"],
+      "icons": ["folderbadges-php", "application-x-php", "text-x-php"],
       "markers": ["composer.json"],
       "extensions": ["php"]
     },
     {
       "id": "cpp", "name": "C++",
-      "icons": ["text-x-c++src", "text-x-c++"],
+      "icons": ["folderbadges-cpp", "text-x-c++src", "text-x-c++"],
       "extensions": ["cpp", "cc", "cxx", "hpp", "hh", "hxx"],
       "shared": ["h"]
     },
     {
       "id": "c", "name": "C",
-      "icons": ["text-x-csrc", "text-x-c"],
+      "icons": ["folderbadges-c", "text-x-csrc", "text-x-c"],
       "markers": ["Kconfig+Makefile"],
       "extensions": ["c"],
       "shared": ["h"]
     },
     {
       "id": "lua", "name": "Lua",
-      "icons": ["text-x-lua", "text-x-script"],
+      "icons": ["folderbadges-lua", "text-x-lua", "text-x-script"],
       "extensions": ["lua"]
     },
     {
       "id": "qml", "name": "QML",
-      "icons": ["text-x-qml"],
+      "icons": ["folderbadges-qml", "text-x-qml"],
       "extensions": ["qml"]
     },
     {
       "id": "shell", "name": "Shell",
-      "icons": ["application-x-shellscript", "text-x-script"],
+      "icons": ["folderbadges-shell", "application-x-shellscript", "text-x-script"],
       "extensions": ["sh", "bash", "zsh", "fish"]
     },
     {
       "id": "sql", "name": "SQL",
-      "icons": ["text-x-sql"],
+      "icons": ["folderbadges-sql", "text-x-sql"],
       "extensions": ["sql"]
     },
     {
       "id": "r", "name": "R",
-      "icons": ["text-x-r"],
+      "icons": ["folderbadges-r", "text-x-r"],
       "extensions": ["r", "rmd"]
     },
     {
       "id": "latex", "name": "LaTeX",
-      "icons": ["text-x-tex"],
+      "icons": ["folderbadges-latex", "text-x-tex"],
       "extensions": ["tex", "bib", "sty", "cls"]
     },
     {
       "id": "markdown", "name": "Markdown",
-      "icons": ["text-markdown", "text-x-markdown"],
+      "icons": ["folderbadges-markdown", "text-markdown", "text-x-markdown"],
       "extensions": ["md", "markdown", "mdx"]
     },
     {
       "id": "web", "name": "HTML/CSS",
-      "icons": ["text-html"],
+      "icons": ["folderbadges-web", "text-html"],
       "extensions": ["html", "htm", "css", "scss"]
     },
     {
       "id": "pdf", "name": "PDF documents",
-      "icons": ["application-pdf"],
+      "icons": ["folderbadges-pdf", "application-pdf"],
       "extensions": ["pdf"]
     },
     {
       "id": "images", "name": "Images",
-      "icons": ["image-x-generic"],
+      "icons": ["folderbadges-images", "image-x-generic"],
       "extensions": ["jpg", "jpeg", "png", "gif", "webp", "avif", "heic", "svg", "bmp", "tif", "tiff", "raw", "cr2", "nef", "arw", "dng", "xcf", "kra"]
     },
     {
       "id": "audio", "name": "Audio",
-      "icons": ["audio-x-generic"],
+      "icons": ["folderbadges-audio", "audio-x-generic"],
       "extensions": ["mp3", "flac", "ogg", "opus", "m4a", "wav", "aac", "wma"]
     },
     {
       "id": "video", "name": "Video",
-      "icons": ["video-x-generic"],
+      "icons": ["folderbadges-video", "video-x-generic"],
       "extensions": ["mp4", "mkv", "webm", "avi", "mov", "m4v", "wmv"]
     }
   ]

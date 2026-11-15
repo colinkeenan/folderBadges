@@ -45,7 +45,7 @@ private Q_SLOTS:
     {
         const TypeTable table = builtinTable();
         QVERIFY(table.types().size() > 20);
-        QCOMPARE(table.iconsFor(QStringLiteral("rust")).first(), QStringLiteral("text-rust"));
+        QCOMPARE(table.iconsFor(QStringLiteral("rust")).first(), QStringLiteral("folderbadges-rust"));
         QVERIFY(table.iconsFor(QStringLiteral("nope")).isEmpty());
     }
 
