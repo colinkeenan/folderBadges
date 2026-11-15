@@ -90,6 +90,8 @@ the daemon keeps the result in memory only.
 folderbadges set ~/notes/physics latex   # pin a badge
 folderbadges set ~/Downloads none        # pin "no badge"
 folderbadges clear ~/notes/physics       # back to automatic
+folderbadges clear -r ~/Documents         # same for a folder and everything below it;
+                                         # skips hidden folders, keeps pinned badges
 folderbadges types                       # list known types and their icons
 ```
 

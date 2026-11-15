@@ -4,8 +4,10 @@
 #include <QCoreApplication>
 #include <QDBusConnection>
 #include <QDBusMessage>
+#include <QDBusPendingCall>
 #include <QDateTime>
 #include <QDir>
+#include <QDirIterator>
 #include <QFileInfo>
 #include <QTextStream>
 
@@ -21,19 +23,38 @@ static int usage()
            "  folderbadges get DIR...        show the badge stored on a folder\n"
            "  folderbadges set DIR TYPE      pin a badge ('none' pins \"no badge\")\n"
            "  folderbadges clear DIR...      forget the stored badge, back to automatic\n"
+           "  folderbadges clear -r DIR...   same for DIR and every folder below it; skips hidden\n"
+           "                                 folders and keeps pinned badges (--recursive)\n"
            "  folderbadges types             list known badge types\n";
     return 2;
 }
 
 // Tell a running (or D-Bus activatable) daemon, and through it open file managers.
-static void notifyDaemon(const QString &path)
+// With wait = false the call is only queued; finish with flushDaemon().
+static void notifyDaemon(const QString &path, bool wait = true)
 {
     QDBusMessage call = QDBusMessage::createMethodCall(QStringLiteral("io.github.folderbadges"),
                                                        QStringLiteral("/FolderBadges"),
                                                        QStringLiteral("io.github.folderbadges.Classifier"),
                                                        QStringLiteral("Refresh"));
     call << path;
-    QDBusConnection::sessionBus().call(call, QDBus::Block, 2000);
+    if (wait) {
+        QDBusConnection::sessionBus().call(call, QDBus::Block, 2000);
+    } else {
+        QDBusConnection::sessionBus().asyncCall(call);
+    }
+}
+
+// Calls on one connection are delivered in order, so one answered call means every queued
+// Refresh before it has reached the daemon.
+static void flushDaemon()
+{
+    QDBusConnection::sessionBus().call(QDBusMessage::createMethodCall(QStringLiteral("io.github.folderbadges"),
+                                                                      QStringLiteral("/FolderBadges"),
+                                                                      QStringLiteral("io.github.folderbadges.Classifier"),
+                                                                      QStringLiteral("Version")),
+                                       QDBus::Block,
+                                       5000);
 }
 
 static QString absolute(const QString &arg)
@@ -49,7 +70,8 @@ int main(int argc, char **argv)
         return usage();
     }
     const QString command = args.first();
-    const QStringList rest = args.mid(1);
+    QStringList rest = args.mid(1);
+    const bool recursive = command == QLatin1String("clear") && (rest.removeAll(QStringLiteral("-r")) + rest.removeAll(QStringLiteral("--recursive"))) > 0;
     const TypeTable table = TypeTable::load();
 
     if (command == QLatin1String("types") && rest.isEmpty()) {
@@ -111,7 +133,7 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    if (command == QLatin1String("clear")) {
+    if (command == QLatin1String("clear") && !recursive) {
         int status = 0;
         for (const QString &arg : std::as_const(dirs)) {
             const QString path = absolute(arg);
@@ -123,6 +145,48 @@ int main(int argc, char **argv)
             notifyDaemon(path);
         }
         return status;
+    }
+
+    if (command == QLatin1String("clear")) {
+        int cleared = 0;
+        int pinned = 0;
+        int failed = 0;
+        const auto clearOne = [&](const QString &path) {
+            const auto stored = Store::read(path);
+            if (!stored) {
+                return; // never classified, nothing to forget
+            }
+            if (stored->pinned) {
+                ++pinned;
+            } else if (Store::clear(path)) {
+                ++cleared;
+                notifyDaemon(path, false);
+            } else {
+                err << path << ": cannot remove the " << Store::AttributeName << " extended attribute\n";
+                ++failed;
+            }
+        };
+        for (const QString &arg : std::as_const(dirs)) {
+            const QString top = absolute(arg);
+            clearOne(top);
+            // No QDir::Hidden: hidden folders are neither cleared nor descended into.
+            QDirIterator it(top, QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks, QDirIterator::Subdirectories);
+            while (it.hasNext()) {
+                clearOne(it.next());
+            }
+        }
+        if (cleared > 0) {
+            flushDaemon();
+        }
+        out << cleared << " cleared";
+        if (pinned > 0) {
+            out << ", " << pinned << " pinned left alone";
+        }
+        if (failed > 0) {
+            out << ", " << failed << " failed";
+        }
+        out << '\n';
+        return failed > 0 ? 1 : 0;
     }
 
     return usage();
