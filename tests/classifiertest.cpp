@@ -104,6 +104,17 @@ private Q_SLOTS:
         QVERIFY2(result.type == expected, qPrintable(QStringLiteral("got '%1' (%2)").arg(result.type, result.reason)));
     }
 
+    void symlinkDoesNotBreakSameTypeRule()
+    {
+        // Notes with a "book.pdf" link to the source next to them are still Markdown.
+        QTemporaryDir root;
+        const QString dir = make(root, QStringLiteral("book"), {"a.md", "b.md", "images/1.png", "images/2.png", "images/3.png", "images/4.png"});
+        make(root, QStringLiteral("elsewhere"), {"source.pdf"});
+        QVERIFY(QFile::link(root.filePath(QStringLiteral("elsewhere/source.pdf")), dir + QStringLiteral("/book.pdf")));
+        const Classification result = Classifier(builtinTable(), Settings()).classify(dir);
+        QVERIFY2(result.type == QStringLiteral("markdown"), qPrintable(result.reason));
+    }
+
     void depthAndEntryLimits()
     {
         QTemporaryDir root;

@@ -24,8 +24,9 @@ namespace
 {
 
 struct RootListing {
-    QStringList files;
+    QStringList files; // everything that is not a directory, for marker matching
     QStringList dirs;
+    QStringList ownFiles; // visible regular files; symlinks are left out, as in the scan
 };
 
 bool anyMatches(const QString &glob, const QStringList &names)
@@ -78,6 +79,9 @@ Classification Classifier::classify(const QString &directory) const
             root.dirs << name;
         } else {
             root.files << name;
+            if (!name.startsWith(QLatin1Char('.')) && !it->is_symlink(typeEc) && it->is_regular_file(typeEc)) {
+                root.ownFiles << name;
+            }
         }
     }
 
@@ -129,10 +133,7 @@ Classification Classifier::classify(const QString &directory) const
     if (contenders.isEmpty()) {
         int owner = -1;
         int sameTypeFiles = 0;
-        for (const QString &name : std::as_const(root.files)) {
-            if (name.startsWith(QLatin1Char('.'))) {
-                continue;
-            }
+        for (const QString &name : std::as_const(root.ownFiles)) {
             const int dot = name.lastIndexOf(QLatin1Char('.'));
             const auto it = dot > 0 ? extensionOwner.constFind(name.mid(dot + 1).toLower()) : extensionOwner.constEnd();
             if (it == extensionOwner.constEnd() || (owner >= 0 && *it != owner)) {

@@ -56,7 +56,7 @@ To uninstall: `sudo xargs rm < build/install_manifest.txt`.
    `init.lua` or a folder called `nvim` / `*.nvim` -> Neovim, ...
    A marker shared by several types only narrows the choice: `CMakeLists.txt` or
    `meson.build` means C or C++, whichever has more files.
-2. If the files directly in the folder (at least two, hidden ones ignored) all have the
+2. If the files directly in the folder (at least two; hidden files and symlinks ignored) all have the
    **same type**, that type wins and subfolders are not looked at. Markdown notes next to a
    folder full of images are Markdown.
 3. Otherwise the **dominant file type** of a bounded breadth-first scan (4 levels, 5000
