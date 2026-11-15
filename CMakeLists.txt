@@ -15,7 +15,7 @@ include(KDECompilerSettings NO_POLICY_SCOPE)
 include(CTest)
 
 find_package(Qt6 ${QT_MIN_VERSION} REQUIRED COMPONENTS Core DBus Gui)
-find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS CoreAddons KIO IconThemes)
+find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS CoreAddons KIO)
 
 # KDE's default settings forbid a few Qt conveniences; keep the code portable instead.
 remove_definitions(-DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_NO_KEYWORDS)

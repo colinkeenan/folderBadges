@@ -33,4 +33,4 @@ kcoreaddons_add_plugin(folderbadgesoverlay
     INSTALL_NAMESPACE "kf6/overlayicon"
 )
 target_link_libraries(folderbadgesoverlay PRIVATE
-    KF6::KIOCore KF6::IconThemes Qt6::DBus Qt6::Gui)
+    KF6::KIOCore Qt6::DBus Qt6::Gui)

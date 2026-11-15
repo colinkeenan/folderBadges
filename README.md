@@ -27,7 +27,7 @@ Another frontend (Plasma desktop icons, Krusader, ...) only needs to talk to the
 
 ## Build and install
 
-Needs Qt 6, KDE Frameworks 6 (KIO, KCoreAddons, KIconThemes) and extra-cmake-modules.
+Needs Qt 6, KDE Frameworks 6 (KIO, KCoreAddons) and extra-cmake-modules.
 
 ```sh
 cmake -S . -B build -DCMAKE_INSTALL_PREFIX=/usr
@@ -36,7 +36,7 @@ ctest --test-dir build
 sudo cmake --install build
 ```
 
-Then restart Dolphin (`kquitapp6 dolphin`, or close every window). Folders get their badge a
+Then restart Dolphin (`killall dolphin`, or close every window). Folders get their badge a
 moment after they first show up in a view.
 
 To uninstall: `sudo xargs rm < build/install_manifest.txt`.
@@ -124,8 +124,10 @@ Service `io.github.folderbadges`, object `/FolderBadges`, interface
   (`folderbadges clear DIR` forces one).
 - Dolphin places the badge in the first free corner (bottom right on a plain folder); a
   symlinked folder already uses that corner for its link emblem.
-- Some themes have no icon for some types (Breeze has none for Nix, Go, Lua or
-  TypeScript), so those fall back to a generic script or JavaScript icon.
+- Some themes have no icon for some types (Breeze and Oxygen have none for Nix, Go, Lua
+  or TypeScript). Those use the next icon in the type's `icons` list that the theme really
+  has (TypeScript -> the JavaScript icon, Nix/Go/Lua -> the script icon); if none exists
+  the folder gets no badge.
 
 ## License
 

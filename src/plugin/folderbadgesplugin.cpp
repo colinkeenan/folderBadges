@@ -7,7 +7,6 @@
  * current icon theme and follow theme changes.
  */
 
-#include <KIconLoader>
 #include <KOverlayIconPlugin>
 
 #include <QDBusConnection>
@@ -123,7 +122,10 @@ private:
         if (it == m_resolved.constEnd()) {
             QString found;
             for (const QString &name : candidates) {
-                if (KIconLoader::global()->hasIcon(name)) {
+                // Exact match only. KIconLoader::hasIcon() also says yes when it can fall back
+                // to a generic icon (text-x-typescript -> text-x-generic), which would paint
+                // a blank page as the badge; no badge is better than that.
+                if (QIcon::hasThemeIcon(name)) {
                     found = name;
                     break;
                 }
