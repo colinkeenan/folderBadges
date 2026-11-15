@@ -15,7 +15,10 @@ struct Classification {
  * Decides which badge a folder gets.
  *
  * 1. Marker files / folder name rules, in type table order (cheap, one directory listing).
- * 2. Otherwise the dominant file type of a bounded breadth-first scan.
+ * 2. Almost all files directly in the folder have one type.
+ * 3. The same with each subfolder counted as one more item of its own (recursively
+ *    determined) type.
+ * 4. Otherwise the dominant file type of a bounded breadth-first scan.
  *
  * Thread safe: classify() only reads the table and settings.
  */
@@ -36,6 +39,8 @@ public:
     }
 
 private:
+    Classification classifyAt(const QString &directory, int level, int &budget) const;
+
     TypeTable m_table;
     Settings m_settings;
 };

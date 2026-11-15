@@ -60,7 +60,10 @@ To uninstall: `sudo xargs rm < build/install_manifest.txt`.
    least two files; hidden files and symlinks are not counted), that type wins and
    subfolders are not looked at. Markdown notes with the odd PDF, next to a folder full of
    images, are Markdown.
-3. Otherwise the **dominant file type** of a bounded breadth-first scan (4 levels, 5000
+3. Otherwise the same test is repeated with **each subfolder counted as one more item**
+   of whatever type that subfolder is classified as. A folder holding a few notes and
+   many subfolders that are themselves Markdown is Markdown.
+4. Otherwise the **dominant file type** of a bounded breadth-first scan (4 levels, 5000
    entries; hidden entries, symlinks and `node_modules`, `target`, `build`, ... are skipped).
    The winner must make up at least 40% of all files seen and must not be tied.
    `.h` files count for C or C++, whichever is ahead.

@@ -118,6 +118,30 @@ private Q_SLOTS:
         QVERIFY2(result.type == QStringLiteral("markdown"), qPrintable(result.reason));
     }
 
+    void subfoldersCountAsItems()
+    {
+        QTemporaryDir root;
+        // Own files alone: 2 of 4 Markdown, not enough. Each "bookN" subfolder is Markdown
+        // (despite its many images), "misc" is not: 6 of 9 items, still short of 75%.
+        QStringList entries{"a.md", "b.md", "x.pdf", "y.txt", "misc/data.bin"};
+        for (int i = 1; i <= 4; ++i) {
+            for (const char *file : {"1.md", "2.md", "images/a.png", "images/b.png", "images/c.png", "images/d.png", "images/e.png"}) {
+                entries << QStringLiteral("book%1/%2").arg(i).arg(QLatin1String(file));
+            }
+        }
+        const QString dir = make(root, QStringLiteral("physics"), entries);
+        const Classifier classifier(builtinTable(), Settings());
+        QCOMPARE(classifier.classify(dir).type, QStringLiteral("images")); // decided by the scan
+
+        // Two more Markdown subfolders: 8 of 11 items, still short; a third makes 9 of 12.
+        makeEntries(dir, {"book5/1.md", "book5/2.md", "book6/1.md", "book6/2.md"});
+        QCOMPARE(classifier.classify(dir).type, QStringLiteral("images"));
+        makeEntries(dir, {"book7/1.md", "book7/2.md"});
+        const Classification result = classifier.classify(dir);
+        QVERIFY2(result.type == QStringLiteral("markdown"), qPrintable(result.reason));
+        QVERIFY(result.reason.contains(QStringLiteral("9 of 12 files and subfolders")));
+    }
+
     void depthAndEntryLimits()
     {
         QTemporaryDir root;

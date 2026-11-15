@@ -28,6 +28,7 @@ struct RootListing {
     QStringList files; // everything that is not a directory, for marker matching
     QStringList dirs;
     QStringList ownFiles; // visible regular files; symlinks are left out, as in the scan
+    QStringList ownDirs; // visible subfolders, without symlinks and ignored names
 };
 
 bool anyMatches(const QString &glob, const QStringList &names)
@@ -61,6 +62,14 @@ bool markerMatches(const QString &marker, const RootListing &root)
 
 Classification Classifier::classify(const QString &directory) const
 {
+    // Shared by the folder and every subfolder classified on its behalf, so that a huge
+    // tree cannot turn one classification into thousands of scans.
+    int budget = 4 * m_settings.maxEntries;
+    return classifyAt(directory, 0, budget);
+}
+
+Classification Classifier::classifyAt(const QString &directory, int level, int &budget) const
+{
     std::error_code ec;
     const fs::path rootPath = fs::path(directory.toStdString());
     if (!fs::is_directory(rootPath, ec)) {
@@ -68,16 +77,21 @@ Classification Classifier::classify(const QString &directory) const
     }
 
     // ---- 1. marker files and folder name ----
+    const QSet<QString> ignored(m_settings.ignoredDirs.begin(), m_settings.ignoredDirs.end());
     RootListing root;
     int rootEntries = 0;
     for (fs::directory_iterator it(rootPath, fs::directory_options::skip_permission_denied, ec), end; !ec && it != end; it.increment(ec)) {
         if (++rootEntries > m_settings.maxEntries) {
             break;
         }
+        --budget;
         std::error_code typeEc;
         const QString name = QString::fromStdString(it->path().filename().string());
         if (it->is_directory(typeEc)) {
             root.dirs << name;
+            if (!name.startsWith(QLatin1Char('.')) && !it->is_symlink(typeEc) && !ignored.contains(name)) {
+                root.ownDirs << name;
+            }
         } else {
             root.files << name;
             if (!name.startsWith(QLatin1Char('.')) && !it->is_symlink(typeEc) && it->is_regular_file(typeEc)) {
@@ -151,8 +165,44 @@ Classification Classifier::classify(const QString &directory) const
         }
     }
 
-    // ---- 2b. dominant type of a bounded scan ----
-    const QSet<QString> ignored(m_settings.ignoredDirs.begin(), m_settings.ignoredDirs.end());
+    // ---- 2b. the same test with every subfolder counted as one more item of its own type ----
+    // A folder of Markdown notes and of subfolders that are themselves Markdown is Markdown.
+    if (contenders.isEmpty() && !root.ownDirs.isEmpty() && level < m_settings.maxDepth) {
+        QList<int> itemCounts(types.size(), 0);
+        for (const QString &name : std::as_const(root.ownFiles)) {
+            const int dot = name.lastIndexOf(QLatin1Char('.'));
+            if (dot <= 0) {
+                continue;
+            }
+            if (const auto it = extensionOwner.constFind(name.mid(dot + 1).toLower()); it != extensionOwner.constEnd()) {
+                ++itemCounts[*it];
+            }
+        }
+        const int total = root.ownFiles.size() + root.ownDirs.size();
+        // Types still able to reach the share; once none can, stop classifying subfolders.
+        int undecided = root.ownDirs.size();
+        for (const QString &name : std::as_const(root.ownDirs)) {
+            const int leader = *std::max_element(itemCounts.cbegin(), itemCounts.cend());
+            if (budget <= 0 || leader + undecided < m_settings.sameTypeShare * total) {
+                break;
+            }
+            --undecided;
+            const QString subType = classifyAt(directory + QLatin1Char('/') + name, level + 1, budget).type;
+            for (int i = 0; i < types.size() && !subType.isEmpty(); ++i) {
+                if (types[i].id == subType) {
+                    ++itemCounts[i];
+                    break;
+                }
+            }
+        }
+        const int owner = std::max_element(itemCounts.cbegin(), itemCounts.cend()) - itemCounts.cbegin();
+        if (itemCounts[owner] >= m_settings.sameTypeMinFiles && itemCounts[owner] >= m_settings.sameTypeShare * total) {
+            return {types[owner].id,
+                    QStringLiteral("%1 of %2 files and subfolders directly in the folder are %3").arg(itemCounts[owner]).arg(total).arg(types[owner].name)};
+        }
+    }
+
+    // ---- 2c. dominant type of a bounded scan ----
     QList<int> counts(types.size(), 0);
     QHash<QString, int> sharedCounts;
     int totalFiles = 0;
@@ -201,6 +251,8 @@ Classification Classifier::classify(const QString &directory) const
             }
         }
     }
+
+    budget -= entriesSeen;
 
     // Shared extensions (.h) go to whichever claimant is ahead on its own files.
     for (auto it = sharedCounts.constBegin(); it != sharedCounts.constEnd(); ++it) {
